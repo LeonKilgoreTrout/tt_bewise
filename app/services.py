@@ -1,9 +1,11 @@
-from .database import SessionLocal
+from app.database import SessionLocal
 from fastapi import HTTPException
-from .logger import log
-from .models import Category, Question
+from app.logger import log
+from app.models import Category, Question
 import requests
-from .schemas import QuestionsParameters, QuestionSchema, CategorySchema
+from app.schemas import (
+    QuestionsParameters, QuestionSchema, CategorySchema, QuestionResponse
+)
 from typing import List
 
 
@@ -82,22 +84,30 @@ async def _add_question(question: QuestionSchema,
     raise HTTPException(status_code=409, detail=detail)
 
 
+def _penultimate_question(current_question: QuestionSchema | None) -> QuestionSchema | None:
+    global cached_question
+    try:
+        return cached_question
+    finally:
+        cached_question = current_question
+
+
 async def _add_questions(parameters: QuestionsParameters,
-                         db: SessionLocal) -> QuestionSchema | None:
-    global cache
+                         db: SessionLocal) -> QuestionResponse:
     questions_num = parameters.questions_num
     if questions_num == 0:
-        return None
+        return QuestionResponse(penultimate_question=_penultimate_question(None))
     _questions_added_to_db = []
     while questions_num - len(_questions_added_to_db):
         for question in _get_questions(questions_num - len(_questions_added_to_db)):
             try:
                 added_to_db = await _add_question(question=question, db=db)
                 _questions_added_to_db.append(added_to_db)
-                cache = added_to_db
+                penultimate_question = _penultimate_question(added_to_db)
             except HTTPException:
                 log(message=f"Attempted to save question {question.id}. But it already exists.")
-                cache = None
-        log(message=f"{len(_questions_added_to_db)}/"
-                    f"{questions_num} were unique. Trying to fill again.")
-    return cache
+                penultimate_question = _penultimate_question(None)
+        if len(_questions_added_to_db) != questions_num:
+            log(message=f"{len(_questions_added_to_db)}/"
+                        f"{questions_num} were unique. Trying to fill again.")
+    return QuestionResponse(penultimate_question=penultimate_question)

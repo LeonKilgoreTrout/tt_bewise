@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15.1-alpine
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_SCHEMA}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_SCHEMA}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    container_name: bewise
+    depends_on:
+      - postgres
+    entrypoint: >
+      sh -c
+        "
+          echo Applying alembic migration...
+          alembic upgrade head
+          echo Running tests...
+          pytest
+          echo Starting uvicorn server...
+          uvicorn app.main:app --host 0.0.0.0
+        "
+volumes:
+  postgres-data:

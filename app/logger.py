@@ -2,21 +2,23 @@ from loguru import logger
 import sys
 from typing import Any
 from time import time
+from app.settings import Settings
 
+
+DEBUG = Settings().app_description.debug
 config = {
     "handlers": [
         {
-            "sink": sys.stdout,
-            "format": "{message}"
-        },
-        {
-            "sink": "./logs/logs.log",
+            "sink": "../logs/logs.log",
             "format": "{message}",
             "rotation": "5 MB"
         }
     ]
 }
 
+if DEBUG:
+    config["handlers"].append(dict({"sink": sys.stdout,
+                                    "format": "{message}"}))
 
 logger.remove()
 logger.configure(**config)

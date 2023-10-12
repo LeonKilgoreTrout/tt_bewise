@@ -1,20 +1,19 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
-from typing import Dict, List, Any
+from typing import List
 
 
-app_description = {
-    "title": "Bewise API",
-    "description": "API для получения вопросов викторины",
-    "version": "1.0.0",
-    "debug": True,
-    "openapi_tags": [
-        {
-                "name": "Questions",
-                "description": "Question endpoints"
-        }
-    ]
-}
+class Tag(BaseSettings):
+    name: str
+    description: str
+
+
+class AppDescription(BaseSettings):
+    title: str = "Bewise API"
+    description: str = "API для получения вопросов викторины"
+    version: str = "1.0.0"
+    debug: bool = False
+    openapi_tags: List[Tag] = [Tag(name="Questions", description="Question endpoints")]
 
 
 @lru_cache
@@ -26,7 +25,7 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: str
     DB_URL: str
-    app_description: Any = app_description
+    app_description: AppDescription = AppDescription()
 
     class Config:
         env_file = ".env"

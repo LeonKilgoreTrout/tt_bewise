@@ -1,36 +1,34 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, PositiveInt, NonNegativeInt
 from datetime import datetime
 
 
 class QuestionsParameters(BaseModel):
-    questions_num: int
+    questions_num: NonNegativeInt
 
 
 class CategorySchema(BaseModel):
 
-    id: int
+    id: PositiveInt
     title: str
     created_at: datetime
     updated_at: datetime
-    clues_count: int
-    #
-    # class Config:
-    #     from_attributes = True
+    clues_count: NonNegativeInt
 
 
 class QuestionSchema(BaseModel):
 
-    id: int
+    id: PositiveInt
     answer: str
     question: str
-    value: int | None
+    value: NonNegativeInt | None
     airdate: datetime
     created_at: datetime
     updated_at: datetime
-    category_id: int
-    game_id: int
-    invalid_count: int | None
+    category_id: PositiveInt
+    game_id: PositiveInt
+    invalid_count: NonNegativeInt | None
     category: CategorySchema
 
-    # class Config:
-    #     from_attributes = True
+
+class QuestionResponse(BaseModel):
+    penultimate_question: QuestionSchema | None

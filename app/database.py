@@ -1,4 +1,4 @@
-from .settings import Settings
+from app.settings import Settings
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 
