@@ -1,4 +1,4 @@
-# Тестовое задание на позицию junior python developer
+# Тестовое задание на позицию junior python developer в компанию Bewise.ai
 
 Перед запуском необходимо обновить .env под свои нужды, для докера можно не трогать
 
@@ -48,6 +48,10 @@ uvicorn app.main:app
 - loguru
 - docker
 - postgresql
+
+## Схема
+
+![alt text](https://github.com/LeonKilgoreTrout/tt_bewise/blob/main/static/tables.png)
 
 ## Замечание
 
